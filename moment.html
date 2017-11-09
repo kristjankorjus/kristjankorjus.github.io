@@ -15,6 +15,12 @@
 			myFunction();
 		}
 
+		function timeButton(time_diff) {
+			var new_time = parseFloat(document.getElementById('timestamp').value) + time_diff;
+			window.history.replaceState( {} , 'foo', window.location.pathname + "?robot=" + document.getElementById('robot').value + "&ts=" +  String(new_time));
+			myFunction();
+		}
+
 
 		function myFunction() {
 			var cameras = ["back_camera_left", "left_stereo-left", "front_camera", "right_stereo-left", "back_camera_right"];
@@ -27,6 +33,9 @@
 
 			document.getElementById('robot').value = robot;
 			document.getElementById('timestamp').value = timestamp;
+
+			document.getElementById("moment_link").innerHTML = "https://panel.starship.xyz/devel/moment/" + robot + "/" + timestamp;
+			document.getElementById("moment_link").href = "https://panel.starship.xyz/devel/moment/" + robot + "/" + timestamp;
 
 			var count = 0;
 			for (i = 0; i < 3; i++) {
@@ -44,6 +53,9 @@
 Robot: <input type="text" id="robot">
 Timestamp: <input type="text" id="timestamp">
 <button id="go" onclick="myButton()">ok</button>
+<button id="minus750ms" onclick="timeButton(-0.75)">-750ms</button>
+<button id="plus750ms" onclick="timeButton(0.75)">+750ms</button>
+<a id="moment_link" href="" target="_blank"> Hello World!</a>
 <br>
 
 <script>
