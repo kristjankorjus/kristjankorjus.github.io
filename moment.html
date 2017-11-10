@@ -17,7 +17,7 @@
 
 		function timeButton(time_diff) {
 			var new_time = parseFloat(document.getElementById('timestamp').value) + time_diff;
-			window.history.replaceState( {} , 'foo', window.location.pathname + "?robot=" + document.getElementById('robot').value + "&ts=" +  String(new_time));
+			window.history.replaceState( {} , 'foo', window.location.pathname + "?robot=" + document.getElementById('robot').value + "&ts=" +  String(new_time) + "&num_steps=" + document.getElementById('num_steps').value);
 			myFunction();
 		}
 
