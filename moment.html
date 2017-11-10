@@ -11,7 +11,7 @@
 		}
 
 		function myButton() {
-			window.history.replaceState( {} , 'foo', window.location.pathname + "?robot=" + document.getElementById('robot').value + "&ts=" + document.getElementById('timestamp').value);
+			window.history.replaceState( {} , 'foo', window.location.pathname + "?robot=" + document.getElementById('robot').value + "&ts=" + document.getElementById('timestamp').value + "&num_steps=" + document.getElementById('num_steps').value);
 			myFunction();
 		}
 
@@ -24,6 +24,23 @@
 
 		function myFunction() {
 			var cameras = ["back_camera_left", "left_stereo-left", "front_camera", "right_stereo-left", "back_camera_right"];
+
+			url_robot = getURLParameter('robot');
+			url_ts = getURLParameter('ts');
+			url_num_steps = getURLParameter('num_steps');
+
+			var num_steps = (url_num_steps) ? url_num_steps : 3;
+			var robot = (url_robot) ? url_robot:"6D101";
+			var timestamp = (url_ts) ? url_ts:"1504171120.9728584";
+
+			document.getElementById('num_steps').value = num_steps;
+			document.getElementById('robot').value = robot;
+			document.getElementById('timestamp').value = timestamp;
+
+			document.getElementById("moment_link").innerHTML = "https://panel.starship.xyz/devel/moment/" + robot + "/" + timestamp;
+			document.getElementById("moment_link").href = "https://panel.starship.xyz/devel/moment/" + robot + "/" + timestamp;
+
+			// Calculate timestamps
 			var num_steps = document.getElementById('num_steps').value;
 			var times = [];
 			var delta = 0.25;
@@ -32,17 +49,6 @@
 			for(var i=0; i<num_steps; i++) {
 				times.push(- num_steps_one_side * delta + i * delta);
 			}
-
-			url_robot = getURLParameter('robot');
-			url_ts = getURLParameter('ts');
-			var robot = (url_robot) ? url_robot:"6D101";
-			var timestamp = (url_ts) ? url_ts:"1504171120.9728584";
-
-			document.getElementById('robot').value = robot;
-			document.getElementById('timestamp').value = timestamp;
-
-			document.getElementById("moment_link").innerHTML = "https://panel.starship.xyz/devel/moment/" + robot + "/" + timestamp;
-			document.getElementById("moment_link").href = "https://panel.starship.xyz/devel/moment/" + robot + "/" + timestamp;
 
 			// Empty the table
 			var table = document.getElementById("table-images");
@@ -72,7 +78,7 @@
 <body onload="myFunction();">
 Robot: <input type="text" id="robot">
 Timestamp: <input type="text" id="timestamp">
-Number of steps: <input type="number" id="num_steps" value="3" style="width: 40px;">
+Number of steps: <input type="number" id="num_steps" style="width: 40px;">
 <button id="go" onclick="myButton()">ok</button>
 <button id="minus750ms" onclick="timeButton(-0.75)">-750ms</button>
 <button id="plus750ms" onclick="timeButton(0.75)">+750ms</button>
