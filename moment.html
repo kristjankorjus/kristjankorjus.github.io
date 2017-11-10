@@ -11,37 +11,63 @@
 		}
 
 		function myButton() {
-			window.history.replaceState( {} , 'foo', window.location.pathname + "?robot=" + document.getElementById('robot').value + "&ts=" + document.getElementById('timestamp').value);
+			window.history.replaceState( {} , 'foo', window.location.pathname + "?robot=" + document.getElementById('robot').value + "&ts=" + document.getElementById('timestamp').value + "&num_steps=" + document.getElementById('num_steps').value);
 			myFunction();
 		}
 
 		function timeButton(time_diff) {
 			var new_time = parseFloat(document.getElementById('timestamp').value) + time_diff;
-			window.history.replaceState( {} , 'foo', window.location.pathname + "?robot=" + document.getElementById('robot').value + "&ts=" +  String(new_time));
+			window.history.replaceState( {} , 'foo', window.location.pathname + "?robot=" + document.getElementById('robot').value + "&ts=" +  String(new_time) + "&num_steps=" + document.getElementById('num_steps').value);
 			myFunction();
 		}
 
 
 		function myFunction() {
 			var cameras = ["back_camera_left", "left_stereo-left", "front_camera", "right_stereo-left", "back_camera_right"];
-			var times = [-0.25, 0, 0.25];
 
 			url_robot = getURLParameter('robot');
 			url_ts = getURLParameter('ts');
+			url_num_steps = getURLParameter('num_steps');
+
+			var num_steps = (url_num_steps) ? url_num_steps : 3;
 			var robot = (url_robot) ? url_robot:"6D101";
 			var timestamp = (url_ts) ? url_ts:"1504171120.9728584";
 
+			document.getElementById('num_steps').value = num_steps;
 			document.getElementById('robot').value = robot;
 			document.getElementById('timestamp').value = timestamp;
 
 			document.getElementById("moment_link").innerHTML = "https://panel.starship.xyz/devel/moment/" + robot + "/" + timestamp;
 			document.getElementById("moment_link").href = "https://panel.starship.xyz/devel/moment/" + robot + "/" + timestamp;
 
+			// Calculate timestamps
+			var num_steps = document.getElementById('num_steps').value;
+			var times = [];
+			var delta = 0.25;
+			var num_steps_one_side = Math.floor(num_steps / 2);
+
+			for(var i=0; i<num_steps; i++) {
+				times.push(- num_steps_one_side * delta + i * delta);
+			}
+
+			// Empty the table
+			var table = document.getElementById("table-images");
+			while (table.firstChild) {
+			    table.removeChild(table.firstChild);
+			}
+
 			var count = 0;
-			for (i = 0; i < 3; i++) {
+			for (i = 0; i < num_steps; i++) {
 				var url_beg = "https://panel.starship.xyz/data/image/ts/" + robot + "/" + String(parseFloat(timestamp) + times[i]) + "/";
+				var row = document.createElement("tr");
+				table.appendChild(row);
+
 				for (j = 0; j < cameras.length; j++) {
-					document.getElementById(count).src = url_beg + cameras[j];
+					cell = document.createElement("th");
+					cell_img = document.createElement("img");
+					cell_img.src = url_beg + cameras[j];
+					cell.appendChild(cell_img);
+					row.appendChild(cell);
 					count = count + 1;
 				}
 			}
@@ -52,6 +78,7 @@
 <body onload="myFunction();">
 Robot: <input type="text" id="robot">
 Timestamp: <input type="text" id="timestamp">
+Number of steps: <input type="number" id="num_steps" style="width: 40px;">
 <button id="go" onclick="myButton()">ok</button>
 <button id="minus750ms" onclick="timeButton(-0.75)">-750ms</button>
 <button id="plus750ms" onclick="timeButton(0.75)">+750ms</button>
@@ -68,28 +95,8 @@ Timestamp: <input type="text" id="timestamp">
 	});
 </script>
 
-<table style="width:100%;">
-  <tr>
-    <th><img id="0" src=""></th>
-    <th><img id="1" src=""></th>
-    <th><img id="2" src=""></th>
-		<th><img id="3" src=""></th>
-		<th><img id="4" src=""></th>
-  </tr>
-	<tr>
-    <th><img id="5" src=""></th>
-    <th><img id="6" src=""></th>
-    <th><img id="7" src=""></th>
-		<th><img id="8" src=""></th>
-		<th><img id="9" src=""></th>
-  </tr>
-	<tr>
-    <th><img id="10" src=""></th>
-    <th><img id="11" src=""></th>
-    <th><img id="12" src=""></th>
-		<th><img id="13" src=""></th>
-		<th><img id="14" src=""></th>
-  </tr>
+<table id="table-images" style="width:100%;">
+
 </table>
 
 
