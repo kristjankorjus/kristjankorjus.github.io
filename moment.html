@@ -50,10 +50,10 @@
 			var delta = 0.25;
 			var num_steps_one_side = Math.floor(num_steps / 2);
 
-			document.getElementById("plus-step").innerHTML = "+" + num_steps_one_side + " steps";
-			document.getElementById("minus-step").innerHTML = "-" + num_steps_one_side + " steps";
-			document.getElementById("plus-step").time_diff = delta * num_steps_one_side;
-			document.getElementById("minus-step").time_diff = -delta * num_steps_one_side;
+			document.getElementById("plus-step").innerHTML = "+" + num_steps + " steps";
+			document.getElementById("minus-step").innerHTML = "-" + num_steps + " steps";
+			document.getElementById("plus-step").time_diff = delta * num_steps;
+			document.getElementById("minus-step").time_diff = -delta * num_steps;
 			document.getElementById("plus-step").addEventListener("click", timeButton);
 			document.getElementById("minus-step").addEventListener("click", timeButton);
 
@@ -76,7 +76,6 @@
 
 				for (j = 0; j < cameras.length; j++) {
 					console.log("sleeping");
-					await sleep(300);
 					console.log("slept");
 					cell = document.createElement("th");
 					cell_img = document.createElement("img");
@@ -84,7 +83,12 @@
 					cell.appendChild(cell_img);
 					row.appendChild(cell);
 					count = count + 1;
+
+					if(i == Math.floor(num_steps / 2)) {
+						cell_img.style = "outline: 3px red solid;";
+					}
 				}
+				await sleep(500);
 			}
 		}
 	</script>
