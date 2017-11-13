@@ -6,6 +6,10 @@
 	</style>
 	<script>
 
+		function sleep(ms) {
+	  return new Promise(resolve => setTimeout(resolve, ms));
+		}
+
 		function getURLParameter(name) {
 			return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || [null, ''])[1].replace(/\+/g, '%20')) || null;
 		}
@@ -15,14 +19,14 @@
 			myFunction();
 		}
 
-		function timeButton(time_diff) {
-			var new_time = parseFloat(document.getElementById('timestamp').value) + time_diff;
+		function timeButton(evt) {
+			var new_time = parseFloat(document.getElementById('timestamp').value) + evt.target.time_diff;
 			window.history.replaceState( {} , 'foo', window.location.pathname + "?robot=" + document.getElementById('robot').value + "&ts=" +  String(new_time) + "&num_steps=" + document.getElementById('num_steps').value);
 			myFunction();
 		}
 
 
-		function myFunction() {
+		async function myFunction() {
 			var cameras = ["back_camera_left", "left_stereo-left", "front_camera", "right_stereo-left", "back_camera_right"];
 
 			url_robot = getURLParameter('robot');
@@ -33,6 +37,7 @@
 			var robot = (url_robot) ? url_robot:"6D101";
 			var timestamp = (url_ts) ? url_ts:"1504171120.9728584";
 
+
 			document.getElementById('num_steps').value = num_steps;
 			document.getElementById('robot').value = robot;
 			document.getElementById('timestamp').value = timestamp;
@@ -40,12 +45,19 @@
 			document.getElementById("moment_link").innerHTML = "https://panel.starship.xyz/devel/moment/" + robot + "/" + timestamp;
 			document.getElementById("moment_link").href = "https://panel.starship.xyz/devel/moment/" + robot + "/" + timestamp;
 
-			// Calculate timestamps
 			var num_steps = document.getElementById('num_steps').value;
 			var times = [];
 			var delta = 0.25;
 			var num_steps_one_side = Math.floor(num_steps / 2);
 
+			document.getElementById("plus-step").innerHTML = "+" + num_steps_one_side + " steps";
+			document.getElementById("minus-step").innerHTML = "-" + num_steps_one_side + " steps";
+			document.getElementById("plus-step").time_diff = delta * num_steps_one_side;
+			document.getElementById("minus-step").time_diff = -delta * num_steps_one_side;
+			document.getElementById("plus-step").addEventListener("click", timeButton);
+			document.getElementById("minus-step").addEventListener("click", timeButton);
+
+			// Calculate timestamps
 			for(var i=0; i<num_steps; i++) {
 				times.push(- num_steps_one_side * delta + i * delta);
 			}
@@ -63,6 +75,9 @@
 				table.appendChild(row);
 
 				for (j = 0; j < cameras.length; j++) {
+					console.log("sleeping");
+					await sleep(300);
+					console.log("slept");
 					cell = document.createElement("th");
 					cell_img = document.createElement("img");
 					cell_img.src = url_beg + cameras[j];
@@ -80,13 +95,12 @@ Robot: <input type="text" id="robot">
 Timestamp: <input type="text" id="timestamp">
 Number of steps: <input type="number" id="num_steps" style="width: 40px;">
 <button id="go" onclick="myButton()">ok</button>
-<button id="minus750ms" onclick="timeButton(-0.75)">-750ms</button>
-<button id="plus750ms" onclick="timeButton(0.75)">+750ms</button>
+<button id="minus-step">-1 step</button>
+<button id="plus-step">+1 step</button>
 <a id="moment_link" href="" target="_blank"> Hello World!</a>
 <br>
 
 <script>
-
 	document.getElementById("timestamp").addEventListener("keyup", function(event) {
 		event.preventDefault();
 		if (event.keyCode === 13) {
