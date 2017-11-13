@@ -50,10 +50,10 @@
 			var delta = 0.25;
 			var num_steps_one_side = Math.floor(num_steps / 2);
 
-			document.getElementById("plus-step").innerHTML = "+" + num_steps_one_side + " steps";
-			document.getElementById("minus-step").innerHTML = "-" + num_steps_one_side + " steps";
-			document.getElementById("plus-step").time_diff = delta * num_steps_one_side;
-			document.getElementById("minus-step").time_diff = -delta * num_steps_one_side;
+			document.getElementById("plus-step").innerHTML = "+" + num_steps + " steps";
+			document.getElementById("minus-step").innerHTML = "-" + num_steps + " steps";
+			document.getElementById("plus-step").time_diff = delta * num_steps;
+			document.getElementById("minus-step").time_diff = -delta * num_steps;
 			document.getElementById("plus-step").addEventListener("click", timeButton);
 			document.getElementById("minus-step").addEventListener("click", timeButton);
 
@@ -64,9 +64,10 @@
 
 			// Empty the table
 			var table = document.getElementById("table-images");
-			while (table.firstChild) {
-			    table.removeChild(table.firstChild);
-			}
+			table.remove();
+			table = document.createElement("table");
+			table.id = "table-images";
+			document.getElementById("table-div").appendChild(table);
 
 			var count = 0;
 			for (i = 0; i < num_steps; i++) {
@@ -76,7 +77,6 @@
 
 				for (j = 0; j < cameras.length; j++) {
 					console.log("sleeping");
-					await sleep(300);
 					console.log("slept");
 					cell = document.createElement("th");
 					cell_img = document.createElement("img");
@@ -84,7 +84,12 @@
 					cell.appendChild(cell_img);
 					row.appendChild(cell);
 					count = count + 1;
+
+					if(i == Math.floor(num_steps / 2)) {
+						cell_img.style = "outline: 3px red solid;";
+					}
 				}
+				await sleep(500);
 			}
 		}
 	</script>
@@ -109,10 +114,23 @@ Number of steps: <input type="number" id="num_steps" style="width: 40px;">
 	});
 </script>
 
+<script>
+	document.body.addEventListener("keyup", function(event) {
+		event.preventDefault();
+		if (event.keyCode === 78) {  // 'n'
+			document.getElementById("plus-step").click();
+		} else if (event.keyCode === 80) {  // 'p'
+			document.getElementById("minus-step").click();
+		}
+	});
+</script>
+
+
+<div id="table-div">
 <table id="table-images" style="width:100%;">
 
 </table>
-
+</div>
 
 </body>
 </html>
