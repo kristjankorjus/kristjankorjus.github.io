@@ -64,9 +64,10 @@
 
 			// Empty the table
 			var table = document.getElementById("table-images");
-			while (table.firstChild) {
-			    table.removeChild(table.firstChild);
-			}
+			table.remove();
+			table = document.createElement("table");
+			table.id = "table-images";
+			document.getElementById("table-div").appendChild(table);
 
 			var count = 0;
 			for (i = 0; i < num_steps; i++) {
@@ -113,10 +114,11 @@ Number of steps: <input type="number" id="num_steps" style="width: 40px;">
 	});
 </script>
 
+<div id="table-div">
 <table id="table-images" style="width:100%;">
 
 </table>
-
+</div>
 
 </body>
 </html>
