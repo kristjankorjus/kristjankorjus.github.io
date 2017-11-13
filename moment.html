@@ -114,6 +114,18 @@ Number of steps: <input type="number" id="num_steps" style="width: 40px;">
 	});
 </script>
 
+<script>
+	document.body.addEventListener("keyup", function(event) {
+		event.preventDefault();
+		if (event.keyCode === 78) {  // 'n'
+			document.getElementById("plus-step").click();
+		} else if (event.keyCode === 80) {  // 'p'
+			document.getElementById("minus-step").click();
+		}
+	});
+</script>
+
+
 <div id="table-div">
 <table id="table-images" style="width:100%;">
 
