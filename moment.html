@@ -1,169 +1,136 @@
 <html>
 <header>
 	<title>Javascript moment</title>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-	<style> 
-	img {width: 100%;}
-	.record-hit.selected {
-		background-color: green;
-	}
+	<style>
+		img {width: 100%;}
 	</style>
 	<script>
 
 		function sleep(ms) {
-			return new Promise(resolve => setTimeout(resolve, ms));
+	  return new Promise(resolve => setTimeout(resolve, ms));
 		}
 
 		function getURLParameter(name) {
 			return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || [null, ''])[1].replace(/\+/g, '%20')) || null;
 		}
 
-		function goButton() {
-			window.history.replaceState( {} , 'foo', window.location.pathname + "?robot=" + $("#robot").val() + "&ts=" + $("#timestamp").val() + "&num_secs=" + $("#num_secs").val());
+		function myButton() {
+			window.history.replaceState( {} , 'foo', window.location.pathname + "?robot=" + document.getElementById('robot').value + "&ts=" + document.getElementById('timestamp').value + "&num_steps=" + document.getElementById('num_steps').value);
 			myFunction();
 		}
 
 		function timeButton(evt) {
-			var new_time = parseFloat($("#timestamp").val()) + parseFloat($(evt.target).attr('time_diff'));
-			console.log(new_time)
-			window.history.replaceState( {} , 'foo', window.location.pathname + "?robot=" + $("#robot").val() + "&ts=" +  String(new_time) + "&num_secs=" + $("#num_secs").val());
+			var new_time = parseFloat(document.getElementById('timestamp').value) + evt.target.time_diff;
+			window.history.replaceState( {} , 'foo', window.location.pathname + "?robot=" + document.getElementById('robot').value + "&ts=" +  String(new_time) + "&num_steps=" + document.getElementById('num_steps').value);
 			myFunction();
 		}
 
-		function getClosestTimestamp(timestamp, timestamps) {
-			var closest_diff = 1e30;
-			timestamps.forEach((i_timestamp) => {
-				const diff = Math.abs(timestamp - i_timestamp);
-				if (diff < closest_diff) {
-					closest_timestamp = i_timestamp;
-					closest_diff = diff;
-				}
-			})
-			return closest_timestamp;
-		}
 
-		function myFunction() {
-
-			var cameras = ["left_stereo-left", "front_camera", "right_stereo-left"];
+		async function myFunction() {
+			var cameras = ["back_camera_left", "left_stereo-left", "front_camera", "right_stereo-left", "back_camera_right"];
 
 			url_robot = getURLParameter('robot');
 			url_ts = getURLParameter('ts');
-			url_num_secs = getURLParameter('num_secs');
+			url_num_steps = getURLParameter('num_steps');
 
-			var num_secs = (url_num_secs) ? url_num_secs : 3;
+			var num_steps = (url_num_steps) ? url_num_steps : 3;
 			var robot = (url_robot) ? url_robot:"6D101";
 			var timestamp = (url_ts) ? url_ts:"1504171120.9728584";
 
 
-			$("#num_secs").val(num_secs);
-			$("#robot").val(robot);
-			$("#timestamp").val(timestamp);
+			document.getElementById('num_steps').value = num_steps;
+			document.getElementById('robot').value = robot;
+			document.getElementById('timestamp').value = timestamp;
 
-			// https://local.starship.co:3001/data/image/frames/6E18/1517224621.295/20/front_camera
+			document.getElementById("moment_link").innerHTML = "https://panel.starship.xyz/devel/moment/" + robot + "/" + timestamp;
+			document.getElementById("moment_link").href = "https://panel.starship.xyz/devel/moment/" + robot + "/" + timestamp;
+
+			var num_steps = document.getElementById('num_steps').value;
+			var times = [];
+			var delta = 0.25;
+			var num_steps_one_side = Math.floor(num_steps / 2);
+
+			document.getElementById("plus-step").innerHTML = "+" + num_steps + " steps";
+			document.getElementById("minus-step").innerHTML = "-" + num_steps + " steps";
+			document.getElementById("plus-step").time_diff = delta * num_steps;
+			document.getElementById("minus-step").time_diff = -delta * num_steps;
+			document.getElementById("plus-step").addEventListener("click", timeButton);
+			document.getElementById("minus-step").addEventListener("click", timeButton);
+
+			// Calculate timestamps
+			for(var i=0; i<num_steps; i++) {
+				times.push(- num_steps_one_side * delta + i * delta);
+			}
 
 			// Empty the table
-			var $table = $("#table-images");
-			$table.empty();
+			var table = document.getElementById("table-images");
+			table.remove();
+			table = document.createElement("table");
+			table.id = "table-images";
+			document.getElementById("table-div").appendChild(table);
 
-			$.get('https://data.starship.xyz/data/image/frames/'+robot+'/'+timestamp+'/'+num_secs+'/front_camera', function(results){
-			//$.get('https://local.starship.co:3001/data/image/frames/'+robot+'/'+timestamp+'/'+num_secs+'/front_camera', function(results){
-				$("#moment_link").attr('href', "https://panel.starship.xyz/devel/moment/" + robot + "/" + timestamp).text("https://panel.starship.xyz/devel/moment/" + robot + "/" + timestamp);
+			var count = 0;
+			for (i = 0; i < num_steps; i++) {
+				var url_beg = "https://panel.starship.xyz/data/image/ts/" + robot + "/" + String(parseFloat(timestamp) + times[i]) + "/";
+				var row = document.createElement("tr");
+				table.appendChild(row);
 
-				$("#plus-step").text("+" + num_secs + " secs");
-				$("#minus-step").text("-" + num_secs + " secs");
-				$("#plus-step").attr('time_diff', num_secs);
-				$("#minus-step").attr('time_diff', num_secs);
+				for (j = 0; j < cameras.length; j++) {
+					console.log("sleeping");
+					console.log("slept");
+					cell = document.createElement("th");
+					cell_img = document.createElement("img");
+					cell_img.src = url_beg + cameras[j];
+					cell.appendChild(cell_img);
+					row.appendChild(cell);
+					count = count + 1;
 
-				var closest_timestamp = getClosestTimestamp(timestamp, results.data.timestamps);
-
-				results.data.timestamps.forEach(function(timestamp){
-
-					var url_beg = "https://panel.starship.xyz/data/image/ts/" + robot + "/" + timestamp + "/";
-					var $row = $("<tr/>");
-
-					cameras.forEach(function(camera){
-						var $cell = $('<td><img src="' + url_beg + camera + '"/></td>');
-						$row.append($cell);
-						var $hascar = $('<td>'+
-							'<button type="button" class="record-hit" data-hit="'+robot+';'+timestamp+';'+camera+';'+'left'+'" style="font-size: 20px;">Car from left --&gt;</button><br/>'+
-							'<button type="button" class="record-hit" data-hit="'+robot+';'+timestamp+';'+camera+';'+'right'+'" style="font-size: 20px;">Car from right &lt;--</button>'+
-							'</td>');
-						$row.append($hascar);
-					})
-					if (timestamp === closest_timestamp) {
-						$row.find('img').css("outline", "3px red solid");
+					if(i == Math.floor(num_steps / 2)) {
+						cell_img.style = "outline: 3px red solid;";
 					}
-					$table.append($row);
-				});
-
-			}, 'json');
-
+				}
+				await sleep(500);
+			}
 		}
-
 	</script>
 </header>
 
 <body onload="myFunction();">
 Robot: <input type="text" id="robot">
 Timestamp: <input type="text" id="timestamp">
-Number of steps: <input type="number" id="num_secs" style="width: 40px;">
-<button id="go">ok</button>
+Number of steps: <input type="number" id="num_steps" style="width: 40px;">
+<button id="go" onclick="myButton()">ok</button>
 <button id="minus-step">-1 step</button>
 <button id="plus-step">+1 step</button>
 <a id="moment_link" href="" target="_blank"> Hello World!</a>
 <br>
 
 <script>
-	$("#timestamp").on("keyup", function(event) {
+	document.getElementById("timestamp").addEventListener("keyup", function(event) {
 		event.preventDefault();
 		if (event.keyCode === 13) {
-			$("#go").click();
+			document.getElementById("go").click();
 		}
 	});
 </script>
 
 <script>
-	$(document).on("keyup", function(event) {
+	document.body.addEventListener("keyup", function(event) {
 		event.preventDefault();
 		if (event.keyCode === 78) {  // 'n'
-			$("#plus-step").click();
+			document.getElementById("plus-step").click();
 		} else if (event.keyCode === 80) {  // 'p'
-			$("#minus-step").click();
+			document.getElementById("minus-step").click();
 		}
 	});
-	$("#plus-step").on("click", timeButton);
-	$("#minus-step").on("click", timeButton);
-	$("#go").on("click", goButton);
-	$(document).on('click', '.record-hit', function(){
-		$(this).toggleClass('selected');
-	});
-	$(document).on('click', '#submit', function(){
-		var $selected = $('.record-hit.selected');
-		if (!confirm('Are you sure you want to submit ['+$selected.length+'] annotations?')) { return; }
-		$selected.each(function(){
-			const data = $(this).data('hit').split(';');
-			const senddata = {
-				Robot: data[0],
-				TS: data[1],
-				Camera: data[2],
-				Direction: data[3],
-			}
-			console.log('data', senddata);
-			$.get('https://script.google.com/a/starship.co/macros/s/AKfycbyASoy0FWMFbecA53Cuh-RmUdbisvP9v4tdBoWEfOp4gcPQ0_E/exec', senddata, function(response){
-				console.log('result', response);
-			}, 'json');
-		})
-	})
-
 </script>
 
 
 <div id="table-div">
 <table id="table-images" style="width:100%;">
+
 </table>
 </div>
-
-<button style="font-size: 36px; background-color: green;" id="submit">Submit to google docs</button>
 
 </body>
 </html>
