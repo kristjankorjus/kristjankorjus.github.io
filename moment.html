@@ -2,7 +2,12 @@
 <header>
 	<title>Javascript moment</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-	<style> img {width: 100%;} </style>
+	<style> 
+	img {width: 100%;}
+	.record-hit.selected {
+		background-color: green;
+	}
+	</style>
 	<script>
 
 		function sleep(ms) {
@@ -37,7 +42,7 @@
 			return closest_timestamp;
 		}
 
-		async function myFunction() {
+		function myFunction() {
 
 			var cameras = ["left_stereo-left", "front_camera", "right_stereo-left"];
 
@@ -60,8 +65,8 @@
 			var $table = $("#table-images");
 			$table.empty();
 
-			//$.get('https://data.starship.xyz/data/image/frames/6E18/1517224621.295/'+num_secs+'/front_camera', function(results){
-			$.get('https://local.starship.co:3001/data/image/frames/'+robot+'/'+timestamp+'/'+num_secs+'/front_camera', function(results){
+			$.get('https://data.starship.xyz/data/image/frames/'+robot+'/'+timestamp+'/'+num_secs+'/front_camera', function(results){
+			//$.get('https://local.starship.co:3001/data/image/frames/'+robot+'/'+timestamp+'/'+num_secs+'/front_camera', function(results){
 				$("#moment_link").attr('href', "https://panel.starship.xyz/devel/moment/" + robot + "/" + timestamp).text("https://panel.starship.xyz/devel/moment/" + robot + "/" + timestamp);
 
 				$("#plus-step").text("+" + num_secs + " secs");
@@ -79,7 +84,12 @@
 					cameras.forEach(function(camera){
 						var $cell = $('<td><img src="' + url_beg + camera + '"/></td>');
 						$row.append($cell);
-					});
+						var $hascar = $('<td>'+
+							'<button type="button" class="record-hit" data-hit="'+robot+';'+timestamp+';'+camera+';'+'left'+'" style="font-size: 20px;">Car from left --&gt;</button><br/>'+
+							'<button type="button" class="record-hit" data-hit="'+robot+';'+timestamp+';'+camera+';'+'right'+'" style="font-size: 20px;">Car from right &lt;--</button>'+
+							'</td>');
+						$row.append($hascar);
+					})
 					if (timestamp === closest_timestamp) {
 						$row.find('img').css("outline", "3px red solid");
 					}
@@ -89,6 +99,7 @@
 			}, 'json');
 
 		}
+
 	</script>
 </header>
 
@@ -123,15 +134,36 @@ Number of steps: <input type="number" id="num_secs" style="width: 40px;">
 	$("#plus-step").on("click", timeButton);
 	$("#minus-step").on("click", timeButton);
 	$("#go").on("click", goButton);
+	$(document).on('click', '.record-hit', function(){
+		$(this).toggleClass('selected');
+	});
+	$(document).on('click', '#submit', function(){
+		var $selected = $('.record-hit.selected');
+		if (!confirm('Are you sure you want to submit ['+$selected.length+'] annotations?')) { return; }
+		$selected.each(function(){
+			const data = $(this).data('hit').split(';');
+			const senddata = {
+				Robot: data[0],
+				TS: data[1],
+				Camera: data[2],
+				Direction: data[3],
+			}
+			console.log('data', senddata);
+			$.get('https://script.google.com/a/starship.co/macros/s/AKfycbyASoy0FWMFbecA53Cuh-RmUdbisvP9v4tdBoWEfOp4gcPQ0_E/exec', senddata, function(response){
+				console.log('result', response);
+			}, 'json');
+		})
+	})
 
 </script>
 
 
 <div id="table-div">
 <table id="table-images" style="width:100%;">
-
 </table>
 </div>
+
+<button style="font-size: 36px; background-color: green;" id="submit">Submit to google docs</button>
 
 </body>
 </html>
