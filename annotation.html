@@ -84,11 +84,12 @@
 					cameras.forEach(function(camera){
 						var $cell = $('<td><img src="' + url_beg + camera + '"/></td>');
 						$row.append($cell);
+						if (camera=='right_stereo-left'){
 						var $hascar = $('<td>'+
 							'<button type="button" class="record-hit" data-hit="'+robot+';'+timestamp+';'+camera+';'+'left'+'" style="font-size: 20px;">Car from left --&gt;</button><br/>'+
 							'<button type="button" class="record-hit" data-hit="'+robot+';'+timestamp+';'+camera+';'+'right'+'" style="font-size: 20px;">Car from right &lt;--</button>'+
 							'</td>');
-						$row.append($hascar);
+						$row.append($hascar);}
 					})
 					if (timestamp === closest_timestamp) {
 						$row.find('img').css("outline", "3px red solid");
