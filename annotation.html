@@ -65,8 +65,13 @@
 			var $table = $("#table-images");
 			$table.empty();
 
-			$.get('https://data.starship.xyz/data/image/frames/'+robot+'/'+timestamp+'/'+num_secs+'/front_camera', function(results){
-			//$.get('https://local.starship.co:3001/data/image/frames/'+robot+'/'+timestamp+'/'+num_secs+'/front_camera', function(results){
+			$.ajax({
+				url: 'https://data.starship.xyz/data/image/frames/'+robot+'/'+timestamp+'/'+num_secs+'/front_camera', 
+				xhrFields: {
+           			withCredentials: true
+      			},
+      			crossDomain: true,
+				success: function(results){
 				$("#moment_link").attr('href', "https://panel.starship.xyz/devel/moment/" + robot + "/" + timestamp).text("https://panel.starship.xyz/devel/moment/" + robot + "/" + timestamp);
 
 				$("#plus-step").text("+" + num_secs + " secs");
@@ -97,7 +102,7 @@
 					$table.append($row);
 				});
 
-			}, 'json');
+			}, dataType: 'json'});
 
 		}
 
